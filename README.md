@@ -1,9 +1,14 @@
-# aiven-kafka-demo
-Interview Assignment
+# Table of contents
+1. [Setting Up Kakfa in Aiven](#kafka)
+2. [A Quick Python Kafka Producer](#producer)
+3. [Making Sure it's Working](#test)
+    1. [In the Aiven Console](#console)
+    2. [With a Python Consumer](#consumer)
+3. [Checking the Logs and Making some Charts](#logs)
+    1. [Setting Up InfluxDB](#influxdb)
+    2. [Setting Up Grapfana](#grafana)
 
-## Setting Up Kakfa in Aiven
-
-### Creating the service
+## Setting Up Kakfa in Aiven <a name="kafka"></a>
 
 Once you've got an account, and have successfully logged in to the Aiven Console, just click "+ Create a new service" in the top right.
 
@@ -21,7 +26,7 @@ Once your service is Running, click over to the "Topics" tab and create a new to
 
 Now we'll need to create a producer to write to this topic.
 
-## A Quick Python Kafka producer
+## A Quick Python Kafka Producer <a name="producer"></a>
 
 If you don't already have it, you'll need to install Kafka-Python:
 
@@ -55,14 +60,16 @@ Next you just need to write some stuff to your topic using this Producer. "manuf
   producer.send("manufacturing", message.encode("utf-8"))
   ```
 
-## Making Sure it's Working
+## Making Sure it's Working <a name="test"></a>
 Before we go further, we want to make sure our Producer is working, and there are two good ways to do so.
 
-### In the Aiven Console
+### In the Aiven Console <a name="console"></a>
 
-In the "Topics" tab on the Service, you can find your topic in the "Topics List" section, and click on it to bring up the Info page. Among other useful things on this page, in the top right corner, you'll find the "Messages" button, which brings up the Messages screen for this topic. Here you can use "Fetch Messages" to see what is in the queue. The only downside is, they need to be formatted in JSON or Avro to be readable (unless you can read binary), and the message in the sample code above was plain text. To remedy this you can either check out the sample code, which encodes a packet of useful information as JSON and writes it to the topic, or you can consume it ...
+In the "Topics" tab on the Service, you can find your topic in the "Topics List" section, and click on it to bring up the Info page. Among other useful things on this page, in the top right corner, you'll find the "Messages" button, which brings up the Messages screen for this topic. Here you can use "Fetch Messages" to see what is in the queue.
 
-### With a Python Consumer
+The only downside is of doing it this way is, the messages need to be formatted in JSON or Avro to be readable (unless you can read binary), and the message in the sample code above was plain text. To remedy this you can either check out the sample code, which encodes a packet of useful information as JSON and writes it to the topic, or you can consume it ...
+
+### With a Python Consumer <a name="consumer"></a>
 
 Python consumers are quite simple, but have a few more configuration elements:
   ```
@@ -90,9 +97,38 @@ Then you can just create a simple loop to check regularly for newly published up
       consumer.commit()
   ```
 
-## Checking the Logs and Making some Charts
+## Checking the Logs and Making some Charts <a name="logs"></a>
 
+Now that you've hopefully got something working, let's try monitoring it using Grafana, so wee can make sure our service is healthy, and decide if we need to upgrade to a plan with more resources as we expand.
 
-Add to/Update git ignore for certs/keys/pem
+### Setting up InfluxDB <a name="influxdb"></a>
 
-Need to enable Kafka REST API to see messages in queues
+First we need to Enable the service integration with InfluxDB, which will store the timeseries data related to resource usage and performance. You'll find the "Manage Integrations" button on the "Overview" tab of the Kafka service, you just may need to scroll down the page a bit.
+
+For this, we'll want the "Metrics" integration, so click "Use Integration" for that one. It will ask you to use an existing service or create a new one, you'll need to create a new one, and I recommend InfluxDB for that.
+
+When setting up InfluxDB, it will ask the same questions as Kafka, which cloud, which region, etc. You'll likely get the best performance using the same provider as before, but you don't need to, its all provider agnostic.
+
+That will also take a few minutes to provision, so we'll set up Grafana while we wait.
+
+### Setting Up Grafana <a name="grafana"></a>
+
+We create a Grafana service the same way we set up our Kafka Service, these options should all be familiar by now.
+
+Now we'll need to set up InfluxDB as a data source for Graphana. Once the Grafana service is running, you can just click on the "Service URI" link on the "Overview" tab to open up the web UI. The username and password to log in will be right beneath that link, you'll need those. From the start page, you'll probably have a welcome page prompting you to take the tutorial and set up you first data source, if not, you can set up a data source with the gear icon on the left.
+
+![Set Up Data Source](/images/Grafana.png)
+
+Choose "Add a Data Source" and find InfluxDB on the list, under Time Series Databases.
+
+These are the only settings you'll need to worry about:
+1. URL - You can find this on the Overview tab of your InfluxDB service, However, you'll need to remove some stuff, it should be in this format - https://influx-18e91b62-project-2800.aivencloud.com:19993, remove the username/password, the database and the +influxdb from after the https.
+2. Database - This will be "defaultdb", without the quotes
+3. Username - You can find this on the "Overview" tab of the InfluxDB service.
+4. Password - Right below the Username.
+
+Now click "Save and Test" if you have a green box pop up saying the test was successful, you're all set to make some great visualizations.
+
+![Disk Usage](/images/Graph.png)
+
+Here is my feeble attempt at showing how much disk space my Kafka service was using, now you see why I leave this to the pros and focus on moving data around.
