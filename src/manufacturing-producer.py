@@ -1,12 +1,12 @@
 # This script connects to Kafka and send a few messages
 
 from kafka import KafkaProducer
-import json
-import datetime
-import uuid
+from datetime import datetime, timezone
+from uuid import uuid4
+from time import sleep
+from random import random
 import sys
-import time
-import random
+import json
 
 producer = KafkaProducer(
     bootstrap_servers="kakfa-demo-v1-project-2800.aivencloud.com:19995",
@@ -16,20 +16,19 @@ producer = KafkaProducer(
     ssl_keyfile="service.key",
 )
 
-machine_id = str(uuid.uuid4())
+machine_id = str(uuid4()) # Unique ID for each producer
+
+## Allows for Arguments to define the object produced, making it quick to set up multiple producers running in parallel producing different objects
 
 if len(sys.argv) == 1:
-    object_produced = 'Default Object'
+    object_produced = 'DefaultObject'
 else:
     object_produced = sys.argv[1]
 
-print(machine_id)
-print(object_produced)
-
-while True:
-    message_id = str(uuid.uuid4())
+while True: # Run indefinitly, as long as the machine is running
+    message_id = str(uuid4()) # Each message has a unique ID
     packet = {
-        'timestamp': str(datetime.datetime.utcnow().replace(microsecond=0).replace(tzinfo=datetime.timezone.utc).isoformat()),
+        'timestamp': str(datetime.utcnow().replace(microsecond=0).replace(tzinfo=timezone.utc).isoformat()), # ISO 8601
         'message_id': message_id,
         'machine_id': machine_id,
         'object_produced': object_produced}
@@ -38,6 +37,4 @@ while True:
     print(f"Sending Message: {message_id}")
     producer.send("manufacturing", message.encode("utf-8"))
 
-    time.sleep(random.random()*5)
-    # Force sending of all messages
-producer.flush()
+    sleep(random()*5) # Wait up to 5 seconds to add some variety
