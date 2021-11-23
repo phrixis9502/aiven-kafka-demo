@@ -25,21 +25,21 @@ Now we'll need to create a producer to write to this topic.
 
 If you don't already have it, you'll need to install Kafka-Python:
 
-'''pip install kafka-python'''
+  '''pip install kafka-python'''
 
-Next you'll need to create your producer.
+Then, in your python file, you'll need to create your producer.
 
-'''
-from kafka import KafkaProducer
+  '''
+  from kafka import KafkaProducer
 
-producer = KafkaProducer(
-    bootstrap_servers="kafka-1d98b26-project-2800.aivencloud.com:19995", # Service URI
-    security_protocol="SSL",
-    ssl_cafile="ca.pem",
-    ssl_certfile="service.cert",
-    ssl_keyfile="service.key",
-)
-'''
+  producer = KafkaProducer(
+      bootstrap_servers="kafka-1d98b26-project-2800.aivencloud.com:19995", # Service URI
+      security_protocol="SSL",
+      ssl_cafile="ca.pem",
+      ssl_certfile="service.cert",
+      ssl_keyfile="service.key",
+  )
+  '''
 
 The service URI can be found on the "Overview" tab of the service page. You'll also need to put the three files you downloaded earlier in the folder with the python script, ca.pem, service.cert, and service.key.
 
@@ -47,11 +47,11 @@ The service URI can be found on the "Overview" tab of the service page. You'll a
 
 Next you just need to write some stuff to your topic using this Producer. "manufacturing" here is the topic, so if you named yours something different, don't forget to change it.
 
-'''
-message = 'Dear Kafka'
-print("Sending Message")
-producer.send("manufacturing", message.encode("utf-8"))
-'''
+  '''
+  message = 'Dear Kafka'
+  print("Sending Message")
+  producer.send("manufacturing", message.encode("utf-8"))
+  '''
 
 ## Making Sure it's Working
 Before we go further, we want to make sure our Producer is working, and there are two good ways to do so.
@@ -63,30 +63,30 @@ In the "Topics" tab on the Service, you can find your topic in the "Topics List"
 ### With a Python Consumer
 
 Python consumers are quite simple, but have a few more configuration elements:
-'''
-consumer = KafkaConsumer(
-    "manufacturing", #Topic Name
-    auto_offset_reset="earliest",
-    bootstrap_servers="kakfa-demo-v1-project-2800.aivencloud.com:19995", # Service URI
-    client_id="demo-client-1",
-    group_id="demo-group",
-    security_protocol="SSL",
-    ssl_cafile="ca.pem",
-    ssl_certfile="service.cert",
-    ssl_keyfile="service.key",
-)
-'''
+  '''
+  consumer = KafkaConsumer(
+      "manufacturing", #Topic Name
+      auto_offset_reset="earliest",
+      bootstrap_servers="kakfa-demo-v1-project-2800.aivencloud.com:19995", # Service URI
+      client_id="demo-client-1",
+      group_id="demo-group",
+      security_protocol="SSL",
+      ssl_cafile="ca.pem",
+      ssl_certfile="service.cert",
+      ssl_keyfile="service.key",
+  )
+  '''
 
 Then you can just create a simple loop to check regularly for newly published updates to your topic like so:
 
-'''
-while True: #Listen for messages indefinitly
-    raw_msgs = consumer.poll(timeout_ms=100)
-    for tp, msgs in raw_msgs.items():
-        for msg in msgs:
-            print(f"Received: {msg.value}")
-    consumer.commit()
-'''
+  '''
+  while True: #Listen for messages indefinitly
+      raw_msgs = consumer.poll(timeout_ms=100)
+      for tp, msgs in raw_msgs.items():
+          for msg in msgs:
+              print(f"Received: {msg.value}")
+      consumer.commit()
+  '''
 
 ## Checking the Logs and Making some Charts
 
