@@ -9,7 +9,7 @@ import sys
 import json
 
 producer = KafkaProducer(
-    bootstrap_servers="kakfa-demo-v1-project-2800.aivencloud.com:19995",
+    bootstrap_servers="kakfa-demo-v1-project-2800.aivencloud.com:19995", # Service URI
     security_protocol="SSL",
     ssl_cafile="ca.pem",
     ssl_certfile="service.cert",
